@@ -1,0 +1,226 @@
+#map {
+	font-family: 'Futura Today', Arial;
+	width: 70%;
+	height: auto;
+	position: relative;
+}
+#info {
+	font-family: 'Futura Today', Arial;
+	min-width: 400px;
+	width: 26%;
+	height: auto;
+	float: right;
+	margin-top: 75px;
+	margin-right: 2%;
+}
+.info-intro {
+    margin-bottom: 75px;
+	font-size: 16px;
+	color:#636363;
+}
+.info-note {
+    font-size: 12px;
+    color: #555;
+    font-style: italic;
+    text-align: right;
+}
+.gradient {
+	background-image:linear-gradient(#fff, transparent);
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100px;
+	z-index: 2;
+}
+#map svg {
+	font-family: 'Futura Today', Arial;
+	position: absolute;
+	top: -500px;
+	left: 0;
+	width: 100%;
+	height: auto;
+}
+.city-names {
+	font-family: 'Futura Today', Arial;
+	font-size: 12px;
+}
+.city-dots {
+	fill: #009BFF;
+	stroke-width: 0;
+	stroke: none;
+}
+.city-dots:hover,
+.city-names:hover {
+	cursor: pointer;
+}
+.card-wrapper {
+	border-radius: 5px;
+	border: 1px solid #ccc;
+	padding: 10px;
+}
+.card-tabs-list {
+	margin: 0 0 10px 0;
+	padding: 0 0 5px 0;
+	list-style-type: none;
+	border-bottom: 1px solid #ccc;
+}
+.card-tabs-item {
+	margin: 0 7px 0 0;
+	padding: 5px 7px;
+	display: inline-block;
+	border-radius: 5px;
+}
+.card-tabs-item:hover {
+	cursor: pointer;
+	background: #eee;
+}
+.card-tabs-item.active {
+	background: #ccc;
+}
+
+.card-tab {
+	display: none;
+}
+.card-tab.active {
+	display: block;
+}
+.card-tab-table {
+	border: 0;
+	border-collapse: collapse;
+	width: 100%;
+	padding: 0;
+	margin: 10px 0;
+	text-align: center;
+	vertical-align: middle;
+}
+.card-table-year {
+	color: #444;
+	border-bottom: 1px solid #eee;
+}
+.card-table-title {
+	color: #444;
+	text-align: left;
+	font-size: 14px;
+	width: 45%;
+	padding-top: 20px;
+}
+.card-table-data {
+	font-size: 24px;
+	line-height: 28px;
+	padding-top: 22px;
+}
+.card-table-text {
+	padding-top: 20px;
+}
+.card-table-arrow {
+	float: right;
+	position: relative;
+	top: 4px;
+    width: 14px;
+    height: auto;
+}
+.green {
+	color: #00A53C;
+}
+.yellow {
+	color: #FFCC00;
+}
+.red {
+	color: #EB1E00;
+}
+.mobile-selection {
+	display: none;
+	width: 100%;
+	margin: 10px 0 20px 0;
+	font-size: 16px;
+}
+@media (max-width: 1550px) {
+	.gradient {
+		height: 50px;
+	}
+}
+@media (max-width: 1450px) {
+	.gradient {
+		height: 20px;
+	}
+	#info {
+		margin-top: 15px;
+	}
+	.info-intro {
+		margin-bottom: 25px;
+	}
+}
+@media (max-width: 1350px) {
+	#map svg {
+		top: -400px;
+		left: -100px;
+	}
+}
+@media (max-width: 1100px) {
+	#map svg {
+	    top: -220px;
+	    left: -120px;
+	}
+}
+@media (max-width: 1000px) {
+	#map {
+		width: 64%;
+	}
+	#map svg {
+	    top: -220px;
+	    left: -100px;
+	}
+	#info {
+		width: 30%;
+	}
+	.info-intro {
+		font-size: 14px;
+	}
+	.card-tabs-item {
+		font-size: 14px;
+	}
+}
+@media (max-width: 900px) {
+	#info {
+		float: none;
+		width: 90%;
+		margin: 0 auto;
+		font-size: 14px;
+		min-width: 320px;
+	}
+	#map {
+		display: none;
+	}
+	.info-intro {
+		font-size: 16px;
+		margin-bottom: 15px;
+	}
+	.card-table-title {
+		padding-top: 10px;
+	}
+	.card-table-data {
+		padding-top: 12px;
+	}
+	.card-table-text {
+		padding-top: 10px;
+	}
+	.mobile-selection {
+		display: block;
+	}
+}
+@media (max-width: 420px) {
+	#info .info-card,
+	.card-tabs-item,
+	.card-table-title {
+		font-size: 12px;
+	}
+	.card-table-data {
+		font-size: 16px;
+		line-height: 20px;
+	}
+	.card-table-arrow {
+		top: 3px;
+		    width: 10px;
+	}
+}

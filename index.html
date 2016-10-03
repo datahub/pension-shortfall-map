@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Wisconsin </title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="http://projects.jsonline.com/shared/css/font.futura-today.css" type="text/css" />
+<link rel="stylesheet" href="css/interactive-styles.css" type="text/css" />
+<script src="js/jquery.min.js"></script>
+<script src="js/lodash.min.js"></script>
+<script src="js/d3.v4.min.js"></script>
+<body>
+	
+	<div id="info">
+		<div class="info-intro">Some local governments in Wisconsin are carrying big liabilities for health or pension benefits for their current and future retirees.<br><br>The Milwaukee Journal Sentinel examined the financial picture of more than 50 units of government across the state, including cities, counties and school districts. Click on a community for all of the related numbers.</div>
+		<div class="info-selection">
+			<select class="mobile-selection">
+				<option value="" selected>Select a community</option>
+				<option value="EauClaire">Eau Claire</option>
+				<option value="WisconsinRapids">Wisconsin Rapids</option>
+				<option value="GreenBay">Green Bay</option>
+				<option value="Oshkosh">Oshkosh</option>
+				<option value="Manitowoc">Manitowoc</option>
+				<option value="PortWashington">Port Washington</option>
+				<option value="Wausau">Wausau</option>
+				<option value="StevensPoint">Stevens Point</option>
+				<option value="Appleton">Appleton</option>
+				<option value="FondduLac">Fond du Lac</option>
+				<option value="Sheboygan">Sheboygan</option>
+				<option value="Milwaukee">Milwaukee</option>
+				<option value="Waukesha">Waukesha</option>
+				<option value="Racine">Racine</option>
+				<option value="Beloit">Beloit</option>
+				<option value="Madison">Madison</option>
+				<option value="Marshfield">Marshfield</option>
+				<option value="WestAllis">West Allis</option>
+				<option value="Greenfield">Greenfield</option>
+				<option value="Kenosha">Kenosha</option>
+				<option value="Janesville">Janesville</option>
+			</select>
+		</div>
+		<div class="info-card"></div>
+		<div class="info-note">*Or most recent projection</div>
+	</div>
+	
+	<div id="map">
+		<div class="gradient"></div>
+	</div>
+	<script type="text/html" id="template-card">
+		<div class="card-wrapper">
+			<ul class="card-tabs-list">
+			<% _.forEach(items, function(item, index) {  %>
+				<li class="card-tabs-item <% if (index === 0) {%>active<% } %>" data-tab="<%=index%>"><%= item.entity_type %></li>
+			<% }) %>
+			</ul>
+			<div class="card-tabs">
+			<% _.forEach(items, function(item, index) {  %>
+				<div class="card-tab <% if (index === 0) {%>active<% } %>" data-tab="<%=index%>">
+					<h3 class="card-tab-title"><%= item.entity %></h3>
+					<table class="card-tab-table">
+						<thead>
+						<tr>
+							<td class="card-table-empty"></td>
+							<td class="card-table-year"><% if (item.unfunded_liability_2010 != '' && item.unfunded_liability_future != '') { %>2010<% } %></td>
+							<td class="card-table-year"><% if (item.unfunded_liability_2010 != '' && item.unfunded_liability_future != '') { %><%= item.report_year %>*<% } %></td>
+						</tr>
+						</thead>
+						<tbody>
+						<% if (item.unfunded_liability_2010 != '' && item.unfunded_liability_future != '') { %>
+						<tr>
+							<td class="card-table-title">Unfunded liability for retiree health benefits</td>
+							<td>
+								$<%= item.unfunded_liability_2010 %>
+							    <img class="card-table-arrow" src="media/<%= item.decreased ? 'arrow_down.png' : 'arrow_up.png' %>" alt="">
+							</td>
+							<td>$<%= item.unfunded_liability_future %></td>
+						</tr>
+						<% } %>
+						<% if (item.unfunded_liability_percentage_payroll != '') { %>
+						<tr>
+							<td class="card-table-title">Unfunded liability for retiree health benefits as share of covered payroll</td>
+							<td colspan="2" class="card-table-data">
+							<% if (item.unfunded_liability_percentage_payroll < 50) { %>
+								<span class="green">
+							<% } else if (item.unfunded_liability_percentage_payroll < 150) { %>
+								<span class="yellow">
+							<% } else { %>
+								<span class="red">
+							<% } %>
+								<%= item.unfunded_liability_percentage_payroll %>%
+								</span>
+							</td>
+						</tr>
+						<% } %>
+						<% if (item.total_unfunded_pension != '') { %>
+						<tr>
+							<td class="card-table-title">Unfunded pension liability</td>
+							<td colspan="2" class="card-table-text"><%= item.total_unfunded_pension %></td>
+						</tr>
+						<% } %>
+						<% if (item.employees != '') { %>
+						<tr>
+							<td class="card-table-title">Employees</td>
+							<td colspan="2" class="card-table-text"><%= item.employees %></td>
+						</tr>
+						<% } %>
+						</tbody>
+					</table>
+				</div>
+			<% }) %>
+			</div>
+		</div>
+	</script>
+	<!-- DATA FILE: expected to be a global variable of mapData (var mapData = "[data]";)  -->
+	<script src="data/pension-map.json"></script>
+	<script>
+		// data formatting fcn (dollars, commas, arrow logic, etc...)
+		var formatCityObj = function(cityObj) {
+			var formattedObj = cityObj;
+			var commas = function (x) {
+			    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+			}
+			for(var i = 0; i < cityObj.items.length; i++) {
+				if (cityObj.items[i].unfunded_liability_2010 < cityObj.items[i].unfunded_liability_future) {
+					formattedObj.items[i].decreased = false;
+				} else {
+					formattedObj.items[i].decreased = true;
+				}
+				formattedObj.items[i].unfunded_liability_2010 = commas(cityObj.items[i].unfunded_liability_2010);
+				formattedObj.items[i].unfunded_liability_future = commas(cityObj.items[i].unfunded_liability_future);
+				if (cityObj.items[i].unfunded_liability_percentage_payroll) {
+				formattedObj.items[i].unfunded_liability_percentage_payroll = commas(Math.round(cityObj.items[i].unfunded_liability_percentage_payroll * 100));
+				} else {
+					formattedObj.items[i].unfunded_liability_percentage_payroll = '';
+				}
+				if (!isNaN(parseInt(cityObj.items[i].total_unfunded_pension.toString()[0], 10)) ) {
+					formattedObj.items[i].total_unfunded_pension = '$' + commas(cityObj.items[i].total_unfunded_pension);
+				}
+			}
+			return formattedObj;
+		}
+		// format the data and set it as a global data variable
+		var data = _.map(JSON.parse(mapData),formatCityObj);
+	</script>
+	<script>
+		// loads the wiscsonsin counties svg
+		d3.xml("data/wisc.svg").mimeType("image/svg+xml").get(function(error, xml) {
+		  	if (error) throw error;
+
+		  	document.getElementById('map').appendChild(xml.documentElement);
+		  	var svg = d3.select('svg');
+
+		  	// add white backgounds behind each of the city names for readability
+		  	var rects = d3.selectAll('.city-names text').each(function(d,i) {
+				var box = d3.select(this).node().getBBox();
+				svg.select('.city-names').insert('rect','text')
+				    .attr('fill','#fff')
+					.attr('x',box.x).attr('y',box.y)
+					.attr('height',box.height).attr('width',box.width);
+			});
+
+
+		  	// hover effects for city dots and names
+			svg.selectAll('.city-dots circle').on('mouseover', function(){ cityHover(this); });
+			svg.selectAll('.city-dots circle').on('mouseout', function(){ cityUnHover(this); });
+			
+			svg.selectAll('.city-names text').on('mouseover', function() {
+				var className = '.'+d3.select(this).attr('class').replace('name-','dot-');
+				cityHover(document.querySelector(className));
+			});
+			svg.selectAll('.city-names text').on('mouseout', function() {
+				var className = '.'+d3.select(this).attr('class').replace('name-','dot-');
+				cityUnHover(document.querySelector(className));
+			});
+			
+			var cityHover = function(el) {
+				d3.select(el).transition().attr('r',8);
+			}
+			var cityUnHover = function(el) {
+				d3.select(el).transition().attr('r',4);
+			}
+
+
+			// click effects for the city dots and names
+			svg.selectAll('.city-dots circle').on('click', function(){ cityClick(this); });
+			svg.selectAll('.city-names text').on('click', function(){
+				var className = '.'+d3.select(this).attr('class').replace('name-','dot-');
+				cityClick(document.querySelector(className));
+			});
+
+			// cache the card template, its generator fcn, and target div
+			var templateHTML = document.getElementById('template-card');
+			var cardTemplate = _.template(templateHTML.innerHTML);
+			var info = document.querySelector('.info-card');
+
+			// fill the info div with the associated data
+			var cityClick = function(el) {
+				var city = d3.select(el).attr('class').replace('name-','').replace('dot-','');
+				var cityObj = _.find(data, { 'group': city });
+				info.innerHTML = cardTemplate(cityObj);
+			}
+
+
+			// click events for the info card tabs
+			$(document).on('click','.card-tabs-item', function() {
+				var tab = $(this).data('tab');
+
+				$('.card-tabs-item').removeClass('active');
+				$('.card-tabs-item[data-tab="'+tab+'"]').addClass('active');
+
+				$('.card-tab').removeClass('active');
+				$('.card-tab[data-tab="'+tab+'"]').addClass('active');
+			});
+
+			// select events for the info card tabs on mobile
+			$('.mobile-selection').on('change', function() {
+				var cityObj = _.find(data, { 'group': this.value });
+				info.innerHTML = cardTemplate(cityObj);
+			});
+
+
+			// default to showing milwaukee's data
+			var evt = new MouseEvent("click");
+			$('.dot-Milwaukee')[0].dispatchEvent(evt);
+
+		});
+	</script>
+</body>
+</html>
